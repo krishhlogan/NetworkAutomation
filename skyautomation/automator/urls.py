@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import add_loopback_automation,delete_loopback_automation,get_logs,ListLogs
+from .views import *
 
 urlpatterns = [
     path('addloopback', add_loopback_automation, name='add'),

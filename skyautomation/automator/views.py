@@ -32,4 +32,5 @@ def delete_loopback_automation(request):
 
 class ListLogs(ListAPIView):
     serializer_class = DeviceConfigurationLogsSerializer
-    queryset = DeviceConfigurationLogs.objects.all()
+    queryset = DeviceConfigurationLogs.objects.all().order_by('-created_at')
+    # ordering = ['-created_at']
