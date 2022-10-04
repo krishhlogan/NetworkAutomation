@@ -1,7 +1,10 @@
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
+from .serrializer import DeviceConfigurationLogsSerializer
 from rest_framework.decorators import api_view
 from .tasks import add_loop_back, delete_loop_back
 from .models import DeviceConfigurationLogs
+
 
 # Create your views here.
 
@@ -24,4 +27,12 @@ def delete_loopback_automation(request):
 
 @api_view(["GET"])
 def get_logs(request):
-    return Response(data=DeviceConfigurationLogs.objects.all())
+    print(DeviceConfigurationLogs.objects.all())
+    op = [f.__dict__ for f in DeviceConfigurationLogs.objects.all()]
+    print(op)
+    return Response(data={"data":list(op)})
+
+
+class ListLogs(ListAPIView):
+    serializer_class = DeviceConfigurationLogsSerializer
+    queryset = DeviceConfigurationLogs.objects.all()

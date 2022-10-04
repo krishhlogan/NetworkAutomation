@@ -77,7 +77,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'OPTIONS': {
+        'autocommit': True
     }
+
 }
 
 # Password validation
@@ -124,3 +128,4 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CELERY_BROKER_URL = f"redis://:{os.environ.get('REDIS_PASSWORD')}@redis:{os.environ.get('REDIS_PORT')}"
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True

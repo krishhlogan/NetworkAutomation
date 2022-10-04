@@ -32,7 +32,7 @@ class ConnectionManagerUtil:
         self.connection_config = connection_config
 
     def get_connection(self):
-        if True:
+        try:
             device_config = {
                 'device_type': self.connection_config['device_type'],
                 'host': self.connection_config['host'],
@@ -43,45 +43,59 @@ class ConnectionManagerUtil:
             }
             print("logging config ", device_config)
             return netmiko.ConnectHandler(**device_config)
-        # except (EOFError, SSHException, NetMikoTimeoutException):
-        #     print(f"SSH is not enabled for the device: {self.connection_config['host']}")
+        except (EOFError, SSHException, NetMikoTimeoutException):
+            print(f"SSH is not enabled for the device: {self.connection_config['host']}")
+            return None
 
     def add_loopback(self):
-        print(self.connection_config["loopbacks"])
         for loopback in self.connection_config["loopbacks"]:
-            print(loopback)
             connection = self.get_connection()
-            interface_config = [
-                "interface loop {}".format(loopback["loopback_name"]),
-                "description {}".format(loopback["description"]),
-                "ip address {} {}".format(loopback["ipaddress"], loopback["subnet"]),
-                "no shut"
-            ]
-            output = connection.send_config_set(interface_config)
-            log = DeviceConfigurationLogs(
-                device = self.connection_config["host"]+'_'+self.connection_config['device_type'],
-                message = output,
-                success = False if 'invalid' in output.lower() else True,
-                meta_data = self.connection_config
-            )
-            print(log)
-            log.save()
-            print(DeviceConfigurationLogs.objects.all())
-            print(output)
+            if connection is not None:
+                interface_config = [
+                    "interface loop {}".format(loopback["loopback_name"]),
+                    "description {}".format(loopback["description"]),
+                    "ip address {} {}".format(loopback["ipaddress"], loopback["subnet"]),
+                    "no shut"
+                ]
+                output = connection.send_config_set(interface_config)
+                connection.cleanup()
+                DeviceConfigurationLogs.objects.create(
+                    device=self.connection_config["host"] + '_' + self.connection_config['device_type'],
+                    type='ADD',
+                    message=output,
+                    success=False if 'invalid' in output.lower() else True,
+                    meta_data=self.connection_config
+                )
+            else:
+                DeviceConfigurationLogs.objects.create(
+                    device=self.connection_config["host"] + '_' + self.connection_config['device_type'],
+                    type='ADD',
+                    message="Unable to ssh into the host",
+                    success=False,
+                    meta_data=self.connection_config
+                )
 
     def remove_loopback(self):
         for loopback in self.connection_config["loopbacks"]:
-            print(loopback)
             connection = self.get_connection()
-            interface_config = [
-                "no interface {}".format(loopback["interface_name"])
-            ]
-            output = connection.send_config_set(interface_config)
-            log = DeviceConfigurationLogs(
-                device=self.connection_config["host"] + '_' + self.connection_config['device_type'],
-                message=output,
-                success=False if 'invalid' in output.lower() else True,
-                meta_data=self.connection_config
-            )
-            log.save()
-
+            if connection is not None:
+                interface_config = [
+                    "no interface {}".format(loopback["interface_name"])
+                ]
+                output = connection.send_config_set(interface_config)
+                connection.cleanup()
+                DeviceConfigurationLogs.objects.create(
+                    device=self.connection_config["host"] + '_' + self.connection_config['device_type'],
+                    type='REMOVE',
+                    message=output,
+                    success=False if 'invalid' in output.lower() else True,
+                    meta_data=self.connection_config
+                )
+            else:
+                DeviceConfigurationLogs.objects.create(
+                    device=self.connection_config["host"] + '_' + self.connection_config['device_type'],
+                    type='ADD',
+                    message="Unable to ssh into the host",
+                    success=False,
+                    meta_data=self.connection_config
+                )

@@ -29,9 +29,9 @@ services:
       - cache:/data
   celery:
     build: .
-    command: celery -A skyautomation worker -l INFO
+    command: celery -A skyautomation worker -l DEBUG
     volumes:
-      - .:/usr/src/app
+      - .:/app/
     env_file:
       - .env.dev
     depends_on:

@@ -6,8 +6,9 @@ from django.utils.timezone import now
 
 
 class DeviceConfigurationLogs(models.Model):
+    TYPES = [('ADD', 'ADD'), ('REMOVE', 'REMOVE')]
     device = models.SlugField(max_length=255)
-    type = models.CharField(max_length=20, choices=[['ADD', 'ADD'], ['REMOVE', 'REMOVE']])
+    type = models.CharField(max_length=20, choices=TYPES)
     message = models.TextField()
     success = models.BooleanField()
     meta_data = models.TextField(default="{}")
