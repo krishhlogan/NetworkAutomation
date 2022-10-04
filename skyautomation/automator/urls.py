@@ -4,6 +4,5 @@ from .views import add_loopback_automation,delete_loopback_automation,get_logs,L
 urlpatterns = [
     path('addloopback', add_loopback_automation, name='add'),
     path('removeloopback', delete_loopback_automation, name='remove'),
-    path('logs',get_logs, name='logs'),
-    path('list/', ListLogs.as_view(), name="list logs"),
+    path('logs/', ListLogs.as_view(), name="list logs"),
 ]

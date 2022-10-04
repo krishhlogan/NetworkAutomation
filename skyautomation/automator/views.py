@@ -10,27 +10,24 @@ from .models import DeviceConfigurationLogs
 
 @api_view(["POST"])
 def add_loopback_automation(request):
-    print(request.data)
-    # if "devices" not in request.data:
-    #     raise ValueError("Device info not found")
-    print(add_loop_back.delay(request.data))
-    return Response(status=200, data={"status": "success", "message": "adding loopback initiated successfully"})
+    try:
+        add_loop_back.delay(request.data)
+        return Response(status=200, data={"status": "success", "message": "adding loopback initiated successfully"})
+    except ValueError as ve:
+        return Response(status=400, data={"status": "fail", "message": f"Error while adding loopback. {ve}"})
+    except Exception as e:
+        return Response(status=500, data={"status" : "fail", "message": f"Error while adding loopback. {e}"})
 
 
 @api_view(["POST"])
 def delete_loopback_automation(request):
-    # if "device_to_interface" not in request.data:
-    #     raise ValueError("Device info not found")
-    print(delete_loop_back.delay(request.data))
-    return Response(status=200, data={"status": "success", "message": "deleting loopback initiated successfully"})
-
-
-@api_view(["GET"])
-def get_logs(request):
-    print(DeviceConfigurationLogs.objects.all())
-    op = [f.__dict__ for f in DeviceConfigurationLogs.objects.all()]
-    print(op)
-    return Response(data={"data":list(op)})
+    try:
+        delete_loop_back.delay(request.data)
+        return Response(status=200, data={"status": "success", "message": "removing loopback initiated successfully"})
+    except ValueError as ve:
+        return Response(status=400, data={"status": "fail", "message": f"Error while removing loopback. {ve}"})
+    except Exception as e:
+        return Response(status=500, data={"status" : "fail", "message": f"Error while removing loopback. {e}"})
 
 
 class ListLogs(ListAPIView):

@@ -41,7 +41,6 @@ class ConnectionManagerUtil:
                 'port': self.connection_config['port'],  # optional, defaults to 22
                 'secret': self.connection_config['secret']  # optional, defaults to ''
             }
-            print("logging config ", device_config)
             return netmiko.ConnectHandler(**device_config)
         except (EOFError, SSHException, NetMikoTimeoutException):
             print(f"SSH is not enabled for the device: {self.connection_config['host']}")
@@ -74,6 +73,7 @@ class ConnectionManagerUtil:
                     success=False,
                     meta_data=self.connection_config
                 )
+                raise TimeoutError("Unable to ssh into the device")
 
     def remove_loopback(self):
         for loopback in self.connection_config["loopbacks"]:
@@ -99,3 +99,4 @@ class ConnectionManagerUtil:
                     success=False,
                     meta_data=self.connection_config
                 )
+                raise TimeoutError("Unable to ssh into the device")
