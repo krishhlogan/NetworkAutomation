@@ -1,0 +1,42 @@
+services:
+  api:
+    build: .
+    restart: always
+    command: >
+      sh -c "python manage.py collectstatic --no-input &&
+                   python manage.py makemigrations &&
+                   python manage.py migrate &&
+                   python manage.py test &&
+                   python manage.py runserver 0.0.0.0:$API_PORT"
+    volumes:
+      - .:/app/
+    ports:
+      - 80:8000
+    env_file:
+      - .env.dev
+    depends_on:
+      - redis
+  redis:
+    image: redis:6.0.9-alpine
+    restart: always
+    ports:
+      - $REDIS_PORT:6379
+    command: >
+      sh -c "redis-server --save 20 1 --loglevel WARNING --requirepass ${REDIS_PASSWORD}"
+    env_file:
+      - .env.dev
+    volumes:
+      - cache:/data
+  celery:
+    build: .
+    command: celery -A skyautomation worker -l DEBUG
+    volumes:
+      - .:/app/
+    env_file:
+      - .env.dev
+    depends_on:
+      - api
+      - redis
+volumes:
+  cache:
+    driver: local
