@@ -10,9 +10,18 @@ from collections import defaultdict
 
 # Create your views here.
 def validate_connection_config(connection: Connection):
-    print(connection,type(connection))
+    """
+    Validates connection request
+
+    Function validates the request for mandatory keys and values
+
+    Parameters:
+    connection (Connection): object of dataclass Connection used for connecting to device
+
+    Returns:
+    Nothing
+    """
     missing_keys = set(['device_type', 'host', 'username', 'password', 'loopbacks']) - set(connection.keys())
-    print(missing_keys)
     if missing_keys:
         raise ValueError(f"Not all keys are not present in payload. Missing keys are {','.join(missing_keys)}")
     if not (connection['device_type'] and connection['host'] and connection['username'] and connection['password']):
@@ -21,10 +30,19 @@ def validate_connection_config(connection: Connection):
 
 @api_view(["POST"])
 def add_loopback_automation(request):
+    """
+    View for adding loopback
+    Function running the business logic to add loopbacks or return commands for adding loopback
+
+    Parameter:
+    request (HttpRequest): Accepts a django httpRequest, with data for dry_run and devices list in body
+
+    Returns:
+    Response: returns a Response object with status of request, exception message and data
+    """
     try:
         map(validate_connection_config, request.data['devices'])
-        if request.data['dry_run']:
-            print("Starting dry run",request.data['devices'])
+        if 'dry_run' in request.data and request.data['dry_run']:
             commands = defaultdict(list)
             for device in request.data['devices']:
                 for loopback in device['loopbacks']:
@@ -49,9 +67,19 @@ def add_loopback_automation(request):
 
 @api_view(["POST"])
 def delete_loopback_automation(request):
+    """
+        View for deleting loopback
+        Function running the business logic to remove loopbacks or return commands for removing loopback
+
+        Parameter:
+        request (HttpRequest): Accepts a django httpRequest, with data for dry_run and devices list in body
+
+        Returns:
+        Response: returns a Response object with status of request, exception message and data
+        """
     try:
         map(validate_connection_config, request.data['devices'])
-        if request.data['dry_run']:
+        if 'dry_run' in request.data and request.data['dry_run']:
             commands = defaultdict(list)
             for device in request.data['devices']:
                 for loopback in device['loopbacks']:
@@ -71,10 +99,20 @@ def delete_loopback_automation(request):
 
 @api_view(["POST"])
 def list_interfaces(request):
+    """
+        View for adding loopback
+        Function running the business logic to list interfaces
+
+        Parameter:
+        request (HttpRequest): Accepts a django httpRequest, with data for a single connection
+
+        Returns:
+        Response: returns a Response object with status of request, exception message and data
+        """
     try:
         validate_connection_config(request.data)
-        connectionManager = ConnectionManagerUtil(connection_config=request.data)
-        interfaces, exception = connectionManager.list_interfaces()
+        connection_manager = ConnectionManagerUtil(connection_config=request.data)
+        interfaces, exception = connection_manager.list_interfaces()
         if exception is None:
             return Response(status=200, data={"status": "success", "data": interfaces})
         else:
@@ -84,5 +122,9 @@ def list_interfaces(request):
 
 
 class ListLogs(ListAPIView):
+    """
+    ListAPIview for viewing logs of configuration request
+    Used for listing all the device configuration requests received.
+    """
     serializer_class = DeviceConfigurationLogsSerializer
     queryset = DeviceConfigurationLogs.objects.all().order_by('-created_at')

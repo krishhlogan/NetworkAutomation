@@ -29,9 +29,15 @@ class Connection:
 
 class ConnectionManagerUtil:
     def __init__(self, connection_config: Connection):
+        """
+        Constructor to set up connection config details
+        """
         self.connection_config = connection_config
 
     def get_connection(self):
+        """
+        Method to connect to the device using the connection config
+        """
         try:
             device_config = {
                 'device_type': self.connection_config['device_type'],
@@ -56,6 +62,9 @@ class ConnectionManagerUtil:
             return None, message
 
     def list_interfaces(self):
+        """
+        Method for listing interfaces for given connection config
+        """
         connection, exception = self.get_connection()
         if connection is not None:
             interfaces = connection.send_command('show ip int brief', use_textfsm=True)
@@ -78,6 +87,9 @@ class ConnectionManagerUtil:
             return None, exception
 
     def add_loopback(self):
+        """
+        Method for adding loopbacks to given connection
+        """
         for loopback in self.connection_config["loopbacks"]:
             connection, exception = self.get_connection()
             if connection is not None:
@@ -107,6 +119,9 @@ class ConnectionManagerUtil:
                 raise Exception(exception)
 
     def remove_loopback(self):
+        """
+        Method for removing loopbacks for a given connection
+        """
         for loopback in self.connection_config["loopbacks"]:
             connection, exception = self.get_connection()
             if connection is not None:
